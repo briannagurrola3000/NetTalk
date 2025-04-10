@@ -5,7 +5,8 @@ host = '0.0.0.0'
 port = 5555
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#udp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+udp_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+udp_server.bind((host, port + 1))  # use a different port for UDP
 
 server.bind((host, port))
 server.listen()
@@ -30,6 +31,17 @@ def handle(client):
             broadcast(f'{nickname} left the chat!'.encode('ascii'))
             nicknames.remove(nickname)
             break
+
+def handle_udp():
+    while True:
+        msg, addr = udp_server.recvfrom(1024)
+        print(f"[UDP] {addr}: {msg.decode('utf-8')}")
+        # You can also respond back if needed:
+        # udp_server.sendto(b"Message received!", addr)
+
+udp_thread = threading.Thread(target=handle_udp)
+udp_thread.start()
+
 def receive():
     while True:
         client, address = server.accept()

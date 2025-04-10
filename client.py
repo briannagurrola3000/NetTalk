@@ -1,11 +1,19 @@
-import threading
 import socket
+import threading
 
 nickname = input("Choose a nickname: ")
+server_ip = input("Enter server IP (127.0.0.1 for localhost): ")
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_ip = input("Enter server IP (127.0.0.1 for localhost): ")
 client.connect((server_ip, 5555))
+
+udp_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+def send_message(message):
+    if len(message) > 50:
+        client.send(message.encode('ascii'))
+    else:
+        udp_client.sendto(message.encode('utf-8'), (server_ip, 5556))
 
 def receive():
     while True:
@@ -23,7 +31,7 @@ def receive():
 def write():
     while True:
         message = f'{nickname}: {input("")}'
-        client.send(message.encode('ascii'))
+        send_message(message)
 
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
